@@ -21,7 +21,7 @@
     "@upstash/qstash": "^2.7.21"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   },
   "packageManager": "pnpm@9.15.4"
 }

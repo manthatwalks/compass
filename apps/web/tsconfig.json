@@ -1,5 +1,5 @@
 {
-  "extends": "@compass/config/tsconfig",
+  "extends": "../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "plugins": [{ "name": "next" }],
     "paths": {

@@ -24,8 +24,16 @@ const nextConfig = {
     optimizePackageImports: ["@compass/ui"],
     outputFileTracingRoot: path.join(__dirname, "../../"),
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.experiments = {
+        ...config.experiments,
+        asyncWebAssembly: true,
+      };
+      config.output.webassemblyModuleFilename = "./../server/chunks/[id].wasm";
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
-
-// force rebuild

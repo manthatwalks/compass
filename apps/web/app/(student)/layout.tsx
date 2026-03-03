@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@compass/db";
 import BottomNav from "@/components/BottomNav";
 
@@ -11,11 +11,24 @@ export default async function StudentLayout({
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const student = await prisma.student.findUnique({
+  let student = await prisma.student.findUnique({
     where: { clerkId: userId },
   });
 
-  if (!student) redirect("/sign-in");
+  // Auto-create student record if the Clerk webhook missed it
+  if (!student) {
+    const user = await currentUser();
+    if (!user) redirect("/sign-in");
+
+    student = await prisma.student.create({
+      data: {
+        clerkId: userId,
+        email: user.emailAddresses[0]?.emailAddress ?? "",
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
+      },
+    });
+  }
 
   // Redirect to onboarding if not completed
   if (!student.onboardingCompleted) {

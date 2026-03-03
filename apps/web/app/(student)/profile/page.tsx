@@ -33,9 +33,9 @@ export default async function ProfilePage() {
     }),
   ]);
 
-  const clusters = (signalProfile?.interestClusters as InterestCluster[]) ?? [];
+  const clusters = (signalProfile?.interestClusters as unknown as InterestCluster[]) ?? [];
   const characterSignals =
-    (signalProfile?.characterSignals as CharacterSignal[]) ?? [];
+    (signalProfile?.characterSignals as unknown as CharacterSignal[]) ?? [];
 
   return (
     <div className="space-y-5">

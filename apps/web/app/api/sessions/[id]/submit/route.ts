@@ -3,7 +3,11 @@ import { requireStudent } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { Client } from "@upstash/qstash";
 
-const qstash = new Client({ token: process.env.QSTASH_TOKEN! });
+export const maxDuration = 30;
+
+function getQStash() {
+  return new Client({ token: process.env.QSTASH_TOKEN! });
+}
 
 export async function POST(
   _req: Request,
@@ -41,7 +45,7 @@ export async function POST(
 
     // Enqueue synthesis job via QStash
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    await qstash.publishJSON({
+    await getQStash().publishJSON({
       url: `${appUrl}/api/webhooks/qstash`,
       body: {
         type: "POST_SESSION_SYNTHESIS",

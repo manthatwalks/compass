@@ -69,13 +69,13 @@ export default async function StudentDetailPage({
   const privacy = student.privacySettings;
 
   const clusters = privacy?.shareInterestClusters !== false
-    ? ((profile?.interestClusters as InterestCluster[]) ?? [])
+    ? ((profile?.interestClusters as unknown as InterestCluster[]) ?? [])
     : [];
   const characterSignals = privacy?.shareCharacterSignals !== false
-    ? ((profile?.characterSignals as CharacterSignal[]) ?? [])
+    ? ((profile?.characterSignals as unknown as CharacterSignal[]) ?? [])
     : [];
   const trajectoryShifts = privacy?.shareTrajectoryShifts !== false
-    ? ((profile?.trajectoryShifts as TrajectoryShift[]) ?? [])
+    ? ((profile?.trajectoryShifts as unknown as TrajectoryShift[]) ?? [])
     : [];
 
   return (

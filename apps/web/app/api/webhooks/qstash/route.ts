@@ -5,7 +5,12 @@ import { aiService } from "@/lib/ai-service";
 import { redis, CACHE_KEYS } from "@/lib/redis";
 import { Client } from "@upstash/qstash";
 
-const qstash = new Client({ token: process.env.QSTASH_TOKEN! });
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+function getQStash() {
+  return new Client({ token: process.env.QSTASH_TOKEN! });
+}
 
 interface QStashPayload {
   type: "WEEKLY_NUDGE_SWEEP" | "OPPORTUNITY_SWEEP" | "POST_SESSION_SYNTHESIS";
@@ -99,7 +104,7 @@ async function handlePostSessionSynthesis(
     const aiServiceUrl = process.env.AI_SERVICE_URL;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     if (aiServiceUrl) {
-      await qstash.publishJSON({
+      await getQStash().publishJSON({
         url: `${appUrl}/api/webhooks/qstash`,
         body: {
           type: "EMBED_PROFILE",
@@ -285,4 +290,13 @@ async function handleOpportunitySweep() {
   }
 }
 
-export const POST = verifySignatureAppRouter(handler);
+// Lazily wrap handler to avoid Receiver construction at module load time
+// (which throws when QSTASH signing keys are missing during Next.js build)
+let wrappedHandler: ReturnType<typeof verifySignatureAppRouter> | null = null;
+
+export async function POST(req: Request) {
+  if (!wrappedHandler) {
+    wrappedHandler = verifySignatureAppRouter(handler);
+  }
+  return wrappedHandler(req);
+}

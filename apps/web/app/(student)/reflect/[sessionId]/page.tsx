@@ -33,11 +33,25 @@ export default async function SessionPage({
     take: 20,
   });
 
+  // Map Prisma Decimal fields to plain numbers for client components
+  const mappedSession = {
+    ...session,
+    activities: session.activities.map((a) => ({
+      ...a,
+      hoursPerWeek: a.hoursPerWeek ? Number(a.hoursPerWeek) : null,
+    })),
+  };
+
+  const mappedActivities = allActivities.map((a) => ({
+    ...a,
+    hoursPerWeek: a.hoursPerWeek ? Number(a.hoursPerWeek) : null,
+  }));
+
   return (
     <SessionWizard
-      session={session}
+      session={mappedSession}
       student={student}
-      allActivities={allActivities}
+      allActivities={mappedActivities}
     />
   );
 }

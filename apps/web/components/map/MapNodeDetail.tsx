@@ -76,7 +76,7 @@ export default function MapNodeDetail({
 
       {/* Metadata */}
       <div className="space-y-2.5">
-        {meta.medianSalary && (
+        {meta.medianSalary != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#9CA3AF] w-28 flex-shrink-0">
               Median Salary
@@ -86,7 +86,7 @@ export default function MapNodeDetail({
             </span>
           </div>
         )}
-        {meta.growthRate && (
+        {meta.growthRate != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#9CA3AF] w-28 flex-shrink-0">
               Job Growth
@@ -96,7 +96,7 @@ export default function MapNodeDetail({
             </span>
           </div>
         )}
-        {meta.educationRequired && (
+        {meta.educationRequired != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#9CA3AF] w-28 flex-shrink-0">
               Education
@@ -140,7 +140,7 @@ export default function MapNodeDetail({
             </ul>
           </div>
         )}
-        {meta.dayInTheLife && (
+        {meta.dayInTheLife != null && (
           <div>
             <span className="text-xs text-[#9CA3AF] block mb-1">
               Day in the Life
@@ -150,7 +150,7 @@ export default function MapNodeDetail({
             </p>
           </div>
         )}
-        {meta.deadline && (
+        {meta.deadline != null && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#9CA3AF] w-28 flex-shrink-0">
               Deadline

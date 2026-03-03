@@ -152,6 +152,7 @@ export default function MapCanvas() {
       .data(nodes)
       .join("g")
       .attr("class", "map-node")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .call(
         d3
           .drag<SVGGElement, MapNode>()
@@ -168,7 +169,7 @@ export default function MapCanvas() {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
-          })
+          }) as any
       )
       .on("click", (_event, d) => {
         setSelectedNode(d);

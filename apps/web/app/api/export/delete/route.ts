@@ -3,6 +3,8 @@ import { requireStudent } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { redis, CACHE_KEYS } from "@/lib/redis";
 
+export const maxDuration = 30;
+
 export async function DELETE() {
   try {
     const student = await requireStudent();

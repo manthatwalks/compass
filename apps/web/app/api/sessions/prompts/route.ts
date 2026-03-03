@@ -4,6 +4,8 @@ import { prisma } from "@compass/db";
 import { aiService } from "@/lib/ai-service";
 import { z } from "zod";
 
+export const maxDuration = 30;
+
 const bodySchema = z.object({
   sessionId: z.string(),
 });

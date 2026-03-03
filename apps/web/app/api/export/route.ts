@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireStudent } from "@/lib/auth";
 import { prisma } from "@compass/db";
 
+export const maxDuration = 30;
+
 export async function GET() {
   try {
     const student = await requireStudent();

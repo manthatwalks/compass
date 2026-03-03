@@ -4,6 +4,8 @@ import { prisma } from "@compass/db";
 import { redis, CACHE_KEYS, CACHE_TTL } from "@/lib/redis";
 import { aiService } from "@/lib/ai-service";
 
+export const maxDuration = 60;
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }

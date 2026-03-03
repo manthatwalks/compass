@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-// Rebuild with env vars
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -7,6 +6,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ["@prisma/client", ".prisma/client"],
   transpilePackages: ["@compass/ui", "@compass/types", "@compass/db"],
   images: {
     remotePatterns: [

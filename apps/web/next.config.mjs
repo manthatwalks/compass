@@ -26,11 +26,15 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.experiments = {
-        ...config.experiments,
-        asyncWebAssembly: true,
-      };
-      config.output.webassemblyModuleFilename = "./../server/chunks/[id].wasm";
+      // Custom loader for Prisma's WASM query engine.
+      // Next.js 14's bundled wasm-parser can't handle this file, so we
+      // bypass it by treating the .wasm as JS (inlined base64 buffer →
+      // synchronous WebAssembly.Module compilation).
+      config.module.rules.push({
+        test: /query_engine_bg\.wasm$/,
+        loader: path.resolve(__dirname, "prisma-wasm-loader.js"),
+        type: "javascript/auto",
+      });
     }
     return config;
   },

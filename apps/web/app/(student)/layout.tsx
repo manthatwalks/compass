@@ -36,7 +36,7 @@ export default async function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] pb-20">
+    <div className="min-h-screen bg-[#F2F4F7] pb-28">
       {/* Background gradients */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-blue-100/40 blur-[80px]" />

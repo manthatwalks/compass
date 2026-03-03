@@ -85,6 +85,11 @@ const navItems = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  // Hide during active reflection sessions (focused flow)
+  if (pathname.match(/^\/reflect\/[^/]+$/) && !pathname.endsWith("/complete")) {
+    return null;
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="max-w-2xl mx-auto px-4 pb-4">

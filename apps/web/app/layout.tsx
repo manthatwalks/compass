@@ -5,7 +5,6 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "COMPASS — Your Learning Journey",
   description: "A longitudinal student operating system for high school self-authorship",
-  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({

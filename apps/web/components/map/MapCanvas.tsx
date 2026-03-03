@@ -250,6 +250,30 @@ export default function MapCanvas() {
     );
   }
 
+  if (nodes.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#F2F4F7] to-[#E8EBF0]">
+        <div className="text-center max-w-sm px-6">
+          <div className="text-5xl mb-4">🗺️</div>
+          <h2 className="text-xl font-bold text-[#1A1A2E] mb-2">
+            Map is being built
+          </h2>
+          <p className="text-sm text-[#6B7280] mb-4">
+            The career and education map will populate as you complete
+            reflections and build your signal profile. Check back after your
+            first reflection!
+          </p>
+          <a
+            href="/reflect"
+            className="inline-block px-5 py-2.5 bg-[#3B82F6] text-white rounded-xl text-sm font-medium hover:bg-[#2563EB] transition-colors"
+          >
+            Start a Reflection
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-[#F2F4F7] to-[#E8EBF0]">
       {/* Controls */}

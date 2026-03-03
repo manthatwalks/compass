@@ -64,6 +64,7 @@ export default function SessionWizard({
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [localSession, setLocalSession] = useState(session);
 
   const monthName = new Date(
@@ -73,13 +74,19 @@ export default function SessionWizard({
 
   const handleSubmit = useCallback(async () => {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await fetch(`/api/sessions/${session.id}/submit`, {
         method: "POST",
       });
       if (res.ok) {
         router.push(`/reflect/${session.id}/complete`);
+      } else {
+        const data = await res.json().catch(() => null) as { error?: string } | null;
+        setSubmitError(data?.error ?? "Something went wrong. Please try again.");
       }
+    } catch {
+      setSubmitError("Network error. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -164,6 +171,7 @@ export default function SessionWizard({
               onSubmit={handleSubmit}
               onBack={() => setStep(4)}
               submitting={submitting}
+              error={submitError}
             />
           )}
         </motion.div>

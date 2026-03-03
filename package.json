@@ -2,7 +2,7 @@
   "name": "compass",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate --schema=packages/db/prisma/schema.prisma",
+    "postinstall": "pnpm --filter @compass/db exec prisma generate",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",

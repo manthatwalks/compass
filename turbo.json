@@ -2,6 +2,10 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
+    "@compass/db#build": {
+      "cache": false,
+      "outputs": ["generated/**"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],

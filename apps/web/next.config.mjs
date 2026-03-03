@@ -11,7 +11,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  serverExternalPackages: ["@prisma/client", ".prisma/client"],
   transpilePackages: ["@compass/ui", "@compass/types", "@compass/db"],
   images: {
     remotePatterns: [

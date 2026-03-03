@@ -7,9 +7,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  // Strip Prisma-specific pgbouncer param — pg doesn't understand it
-  const url =
-    process.env.DATABASE_URL?.replace(/[?&]pgbouncer=true/, "") ?? "";
+  // Use DIRECT_URL (bypasses pgbouncer) for the pg Pool, since the driver
+  // adapter manages its own connections.  Fall back to DATABASE_URL if unset.
+  const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "";
   const pool = new Pool({ connectionString: url, max: 3 });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

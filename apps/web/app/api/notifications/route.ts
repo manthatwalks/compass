@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const querySchema = z.object({
   page: z.coerce.number().default(1),
-  limit: z.coerce.number().default(20).max(100),
+  limit: z.coerce.number().max(100).default(20),
   unreadOnly: z.coerce.boolean().default(false),
 });
 

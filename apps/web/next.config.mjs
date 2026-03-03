@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Rebuild with env vars
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,

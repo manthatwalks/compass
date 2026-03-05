@@ -7,10 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  // Use DIRECT_URL (bypasses pgbouncer) for the pg Pool, since the driver
-  // adapter manages its own connections.  Fall back to DATABASE_URL if unset.
-  const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "";
-  const pool = new Pool({ connectionString: url, max: 3 });
+  // Use DATABASE_URL (pgbouncer pooled) for runtime queries in serverless.
+  // DIRECT_URL is only for migrations (prisma db push/migrate).
+  const url = process.env.DATABASE_URL ?? process.env.DIRECT_URL ?? "";
+  const pool = new Pool({ connectionString: url, max: 1 });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }

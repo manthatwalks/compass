@@ -13,8 +13,9 @@ function createPrismaClient() {
   const pool = new Pool({
     connectionString: url,
     max: 1,
-    idleTimeoutMillis: 20000,
-    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 20000,        // close idle connections after 20s (before Supabase pgbouncer does)
+    connectionTimeoutMillis: 10000,  // fail fast if can't connect
+    allowExitOnIdle: true,           // let Lambda exit cleanly; prevents stale connections on warm reuse
     ssl: { rejectUnauthorized: false },
   });
   const adapter = new PrismaPg(pool);

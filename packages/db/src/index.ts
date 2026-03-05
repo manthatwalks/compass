@@ -10,7 +10,12 @@ function createPrismaClient() {
   // Use DATABASE_URL (pgbouncer pooled) for runtime queries in serverless.
   // DIRECT_URL is only for migrations (prisma db push/migrate).
   const url = process.env.DATABASE_URL ?? process.env.DIRECT_URL ?? "";
-  const pool = new Pool({ connectionString: url, max: 1 });
+  const pool = new Pool({
+    connectionString: url,
+    max: 1,
+    idleTimeoutMillis: 20000,   // close idle connections after 20s (before pgbouncer recycles them)
+    connectionTimeoutMillis: 10000,
+  });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }

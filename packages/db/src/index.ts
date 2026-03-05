@@ -13,8 +13,9 @@ function createPrismaClient() {
   const pool = new Pool({
     connectionString: url,
     max: 1,
-    idleTimeoutMillis: 20000,   // close idle connections after 20s (before pgbouncer recycles them)
+    idleTimeoutMillis: 20000,
     connectionTimeoutMillis: 10000,
+    ssl: { rejectUnauthorized: false },
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

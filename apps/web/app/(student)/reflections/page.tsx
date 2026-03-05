@@ -9,6 +9,7 @@ export default async function ReflectionsPage() {
     where: { studentId: student.id },
     orderBy: { createdAt: "desc" },
     include: {
+      template: { select: { title: true, orderNum: true } },
       activities: { select: { id: true, name: true } },
       reflections: {
         select: {
@@ -64,7 +65,11 @@ export default async function ReflectionsPage() {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-[#1A1A2E]">
-                    {formatMonthKey(session.monthKey)}
+                    {session.template
+                      ? `Reflection ${session.template.orderNum}: ${session.template.title}`
+                      : session.monthKey
+                      ? formatMonthKey(session.monthKey)
+                      : "Reflection"}
                   </h3>
                   {session.completedAt ? (
                     <span className="text-xs text-emerald-600 font-medium">

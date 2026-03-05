@@ -48,8 +48,14 @@ export default function ReflectionPromptsStep({
         });
 
         if (res.ok) {
-          const data = await res.json() as { prompts: Prompt[] };
-          setPrompts(data.prompts);
+          const data = await res.json() as { prompts: (Prompt & { text?: string; type?: string })[] };
+          // Normalize template format {text, type} to {promptText, promptType}
+          setPrompts(
+            data.prompts.map((p) => ({
+              promptText: p.promptText ?? p.text ?? "",
+              promptType: p.promptType ?? p.type ?? "PATTERN",
+            }))
+          );
         }
       } catch {
         // Fallback prompts
@@ -148,7 +154,7 @@ export default function ReflectionPromptsStep({
       <div className="glass-card p-8 text-center">
         <div className="text-4xl mb-3 animate-pulse">✨</div>
         <p className="text-[#6B7280] text-sm">
-          Generating personalized reflection prompts...
+          Loading your reflection...
         </p>
       </div>
     );

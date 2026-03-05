@@ -16,6 +16,7 @@ export default async function SessionPage({
     include: {
       activities: { orderBy: { createdAt: "asc" } },
       reflections: { orderBy: { createdAt: "asc" } },
+      template: { select: { title: true, orderNum: true } },
     },
   });
 

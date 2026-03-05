@@ -105,21 +105,38 @@ model School {
   counselors     Counselor[]
 }
 
+model ReflectionTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  orderNum    Int      // 1-10, order students encounter it
+  yearKey     String   // "2026"
+  prompts     Json     // [{text: "...", type: "PATTERN|EXPLORATION|IDENTITY|CHALLENGE"}]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions    ReflectionSession[]
+
+  @@unique([yearKey, orderNum])
+}
+
 model ReflectionSession {
   id              String    @id @default(cuid())
   studentId       String
-  monthKey        String    // "2025-03" format for uniqueness
+  monthKey        String?   // kept for legacy data; null for template-based sessions
+  templateId      String?
+  sessionNumber   Int?      // 1-indexed position for this student
   pulseScore      Int?      // 1-10
   pulseNote       String?
   completedAt     DateTime?
   durationSeconds Int?
   createdAt       DateTime  @default(now())
 
-  student         Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student         Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  template        ReflectionTemplate? @relation(fields: [templateId], references: [id])
   activities      Activity[]
   reflections     Reflection[]
-
-  @@unique([studentId, monthKey])
 }
 
 model Activity {

@@ -4,13 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@compass/ui";
 
-export default function StartSessionButton({
-  studentId: _studentId,
-  monthKey,
-}: {
-  studentId: string;
-  monthKey: string;
-}) {
+export default function StartSessionButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -20,7 +14,7 @@ export default function StartSessionButton({
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ monthKey }),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) throw new Error("Failed to create session");

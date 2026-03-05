@@ -15,7 +15,9 @@ import PrivacyReviewStep from "./steps/PrivacyReviewStep";
 
 interface Session {
   id: string;
-  monthKey: string;
+  monthKey?: string | null;
+  sessionNumber?: number | null;
+  template?: { title: string; orderNum: number } | null;
   pulseScore: number | null;
   pulseNote: string | null;
   activities: Activity[];
@@ -67,10 +69,14 @@ export default function SessionWizard({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [localSession, setLocalSession] = useState(session);
 
-  const monthName = new Date(
-    parseInt(session.monthKey.split("-")[0]!),
-    parseInt(session.monthKey.split("-")[1]!) - 1
-  ).toLocaleString("default", { month: "long", year: "numeric" });
+  const sessionTitle = session.template?.title
+    ? `Reflection ${session.template.orderNum}: ${session.template.title}`
+    : session.monthKey
+    ? new Date(
+        parseInt(session.monthKey.split("-")[0]!),
+        parseInt(session.monthKey.split("-")[1]!) - 1
+      ).toLocaleString("default", { month: "long", year: "numeric" }) + " Reflection"
+    : `Reflection ${session.sessionNumber ?? ""}`;
 
   const handleSubmit = useCallback(async () => {
     setSubmitting(true);
@@ -98,7 +104,7 @@ export default function SessionWizard({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-lg font-bold text-[#1A1A2E]">
-            {monthName} Reflection
+            {sessionTitle}
           </h1>
           <p className="text-xs text-[#6B7280]">Step {step} of 5</p>
         </div>

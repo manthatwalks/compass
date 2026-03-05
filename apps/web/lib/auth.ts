@@ -55,3 +55,11 @@ export async function getCurrentUserId(): Promise<string | null> {
   const { userId } = await auth();
   return userId;
 }
+
+export async function requireAdmin() {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+  const role = user.publicMetadata?.role as string | undefined;
+  if (role !== "admin") throw new Error("Forbidden");
+  return user;
+}

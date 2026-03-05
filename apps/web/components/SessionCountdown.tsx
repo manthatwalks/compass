@@ -1,21 +1,20 @@
 "use client";
 
+const COOLDOWN_DAYS = 21;
+
 interface Session {
-  completedAt?: Date | null;
-  monthKey: string;
+  completedAt?: Date | string | null;
 }
 
 function getDaysUntilNext(lastSession: Session | null): number {
   if (!lastSession?.completedAt) return 0;
 
   const completedAt = new Date(lastSession.completedAt);
-  const nextMonth = new Date(completedAt);
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  nextMonth.setDate(1);
+  const unlockDate = new Date(completedAt);
+  unlockDate.setDate(unlockDate.getDate() + COOLDOWN_DAYS);
 
   const now = new Date();
-  const diff = nextMonth.getTime() - now.getTime();
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  return Math.max(0, Math.ceil((unlockDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
 export default function SessionCountdown({
@@ -25,8 +24,7 @@ export default function SessionCountdown({
 }) {
   const daysUntil = getDaysUntilNext(lastSession);
 
-  if (!lastSession) return null;
-  if (daysUntil === 0) return null;
+  if (!lastSession || daysUntil === 0) return null;
 
   return (
     <div className="glass-card p-4">
@@ -39,7 +37,7 @@ export default function SessionCountdown({
             Days until next reflection
           </p>
           <p className="text-xs text-[#6B7280]">
-            Monthly reflections keep your signals fresh
+            Reflections open every 3 weeks
           </p>
         </div>
       </div>

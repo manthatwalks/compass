@@ -13,7 +13,9 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx src/seed.ts",
+    "db:migrate-new": "bash -c 'TIMESTAMP=$(date -u +%Y%m%d%H%M%S) && NAME=${1:-migration} && DIR=prisma/migrations/${TIMESTAMP}_${NAME} && mkdir -p $DIR && prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script > $DIR/migration.sql && echo \"Migration created: $DIR/migration.sql\"'",
+    "db:migrate-deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",

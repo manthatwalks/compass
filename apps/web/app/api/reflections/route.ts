@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
+import { rateLimiters } from "@/lib/redis";
 import { z } from "zod";
 import { PromptType } from "@compass/db";
 
 const createReflectionSchema = z.object({
   sessionId: z.string(),
-  promptText: z.string().min(1),
-  responseText: z.string().optional(),
+  promptText: z.string().min(1).max(2000),
+  responseText: z.string().max(10000).optional(),
   promptType: z.nativeEnum(PromptType),
   isSharedWithCounselor: z.boolean().default(false),
 });
@@ -15,6 +16,12 @@ const createReflectionSchema = z.object({
 export async function POST(req: Request) {
   try {
     const student = await requireStudent();
+
+    const { success } = await rateLimiters.reflectionsCreate.limit(student.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body = await req.json();
     const data = createReflectionSchema.parse(body);
 
@@ -44,7 +51,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(reflection, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

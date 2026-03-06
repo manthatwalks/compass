@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 
@@ -40,7 +40,6 @@ export async function POST(req: Request) {
       ],
     });
   } catch (error) {
-    console.error("Prompts error:", error);
-    return NextResponse.json({ error: "Failed to fetch prompts" }, { status: 400 });
+    return apiError(error);
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 
 export async function POST() {
@@ -14,6 +14,7 @@ export async function POST() {
         shareBreadthScore: false,
         shareTrajectoryShifts: false,
         shareCharacterSignals: false,
+        shareSummary: false,
       },
       create: {
         studentId: student.id,
@@ -21,6 +22,7 @@ export async function POST() {
         shareBreadthScore: false,
         shareTrajectoryShifts: false,
         shareCharacterSignals: false,
+        shareSummary: false,
       },
     });
 
@@ -32,7 +34,6 @@ export async function POST() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

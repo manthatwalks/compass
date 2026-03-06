@@ -17,7 +17,7 @@ settings = get_settings()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production: restrict to NEXT_PUBLIC_APP_URL
+    allow_origins=[settings.app_url],
     allow_credentials=True,
     allow_methods=["POST", "GET"],
     allow_headers=["*"],

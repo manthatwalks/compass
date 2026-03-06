@@ -1,14 +1,27 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
+import { withShareSignals } from "@/lib/privacy-utils";
 
 const updatePrivacySchema = z.object({
+  // Virtual group toggle — fans out to all 4 signal fields
+  shareSignals: z.boolean().optional(),
   shareInterestClusters: z.boolean().optional(),
   shareBreadthScore: z.boolean().optional(),
   shareTrajectoryShifts: z.boolean().optional(),
   shareCharacterSignals: z.boolean().optional(),
+  shareSummary: z.boolean().optional(),
 });
+
+const DEFAULT_SETTINGS = {
+  shareInterestClusters: true,
+  shareBreadthScore: true,
+  shareTrajectoryShifts: true,
+  shareCharacterSignals: true,
+  shareSummary: true,
+};
+
 
 export async function GET() {
   try {
@@ -19,17 +32,10 @@ export async function GET() {
     });
 
     return NextResponse.json(
-      settings ?? {
-        studentId: student.id,
-        shareInterestClusters: true,
-        shareBreadthScore: true,
-        shareTrajectoryShifts: true,
-        shareCharacterSignals: true,
-      }
+      withShareSignals(settings ?? { studentId: student.id, ...DEFAULT_SETTINGS, updatedAt: new Date() })
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }
 
@@ -37,20 +43,28 @@ export async function PUT(req: Request) {
   try {
     const student = await requireStudent();
     const body = await req.json();
-    const data = updatePrivacySchema.parse(body);
+    const { shareSignals, ...rest } = updatePrivacySchema.parse(body);
+
+    const signalFields =
+      shareSignals !== undefined
+        ? {
+            shareInterestClusters: shareSignals,
+            shareBreadthScore: shareSignals,
+            shareTrajectoryShifts: shareSignals,
+            shareCharacterSignals: shareSignals,
+          }
+        : {};
+
+    const data = { ...rest, ...signalFields };
 
     const settings = await prisma.studentPrivacySettings.upsert({
       where: { studentId: student.id },
       update: data,
-      create: {
-        studentId: student.id,
-        ...data,
-      },
+      create: { studentId: student.id, ...data },
     });
 
-    return NextResponse.json(settings);
+    return NextResponse.json(withShareSignals(settings));
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

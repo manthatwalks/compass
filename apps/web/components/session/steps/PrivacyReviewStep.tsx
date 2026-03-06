@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, PrivacyToggle } from "@compass/ui";
 
 interface Reflection {
@@ -29,9 +29,27 @@ export default function PrivacyReviewStep({
   error?: string | null;
 }) {
   const [shareSignals, setShareSignals] = useState(true);
-  // Default: share AI summary, not full text
   const [shareSummary, setShareSummary] = useState(true);
   const [shareFullText, setShareFullText] = useState(false);
+
+  // Load current settings so the UI reflects what's already saved
+  useEffect(() => {
+    fetch("/api/privacy")
+      .then((r) => r.json())
+      .then((s: { shareSignals?: boolean; shareSummary?: boolean }) => {
+        if (typeof s.shareSignals === "boolean") setShareSignals(s.shareSignals);
+        if (typeof s.shareSummary === "boolean") setShareSummary(s.shareSummary);
+      })
+      .catch(() => {});
+  }, []);
+
+  function persistPrivacy(patch: { shareSignals?: boolean; shareSummary?: boolean }) {
+    fetch("/api/privacy", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    }).catch(console.error);
+  }
   const [sharedReflections, setSharedReflections] = useState<
     Record<string, boolean>
   >({});
@@ -80,7 +98,10 @@ export default function PrivacyReviewStep({
           </h3>
           <PrivacyToggle
             enabled={shareSignals}
-            onChange={setShareSignals}
+            onChange={(val) => {
+              setShareSignals(val);
+              persistPrivacy({ shareSignals: val });
+            }}
             label="Share interest signals with counselor"
             description="AI-generated interest clusters, breadth score, and trajectory patterns"
           />
@@ -93,7 +114,10 @@ export default function PrivacyReviewStep({
           </h3>
           <PrivacyToggle
             enabled={shareSummary}
-            onChange={setShareSummary}
+            onChange={(val) => {
+              setShareSummary(val);
+              persistPrivacy({ shareSummary: val });
+            }}
             label="Share AI-generated summary"
             description="A brief overview of themes from your reflections &mdash; not the full text"
           />

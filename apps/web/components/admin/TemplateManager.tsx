@@ -223,68 +223,79 @@ export default function TemplateManager({ templates: initial }: { templates: Tem
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this template? Students who haven't started it will no longer see it.")) return;
-    await fetch(`/api/admin/templates/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/templates/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      alert("Failed to delete template. Please try again.");
+      return;
+    }
     setTemplates((prev) => prev.filter((t) => t.id !== id));
   }
 
   async function handleToggleActive(t: Template) {
-    await fetch(`/api/admin/templates/${t.id}`, {
+    const res = await fetch(`/api/admin/templates/${t.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isActive: !t.isActive }),
     });
+    if (!res.ok) {
+      alert("Failed to update template. Please try again.");
+      return;
+    }
     router.refresh();
   }
 
   return (
     <div className="space-y-4">
-      {templates.map((t) => (
-        <div key={t.id} className={`border rounded-2xl p-4 ${t.isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"}`}>
-          {editingId === t.id ? (
-            <TemplateForm
-              initial={t}
-              existingOrders={existingOrders.filter((o) => o !== t.orderNum)}
-              onSave={(data) => handleUpdate(t.id, data)}
-              onCancel={() => setEditingId(null)}
-            />
-          ) : (
-            <div>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-[#9CA3AF]">{t.yearKey} · #{t.orderNum}</span>
-                    {!t.isActive && <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full">Inactive</span>}
+      {templates.map((t) => {
+        const parsedPrompts = parsePrompts(t.prompts);
+        return (
+          <div key={t.id} className={`border rounded-2xl p-4 ${t.isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"}`}>
+            {editingId === t.id ? (
+              <TemplateForm
+                initial={t}
+                existingOrders={existingOrders.filter((o) => o !== t.orderNum)}
+                onSave={(data) => handleUpdate(t.id, data)}
+                onCancel={() => setEditingId(null)}
+              />
+            ) : (
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-[#9CA3AF]">{t.yearKey} · #{t.orderNum}</span>
+                      {!t.isActive && <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full">Inactive</span>}
+                    </div>
+                    <h3 className="font-semibold text-[#1A1A2E] mt-0.5">{t.title}</h3>
+                    {t.description && <p className="text-sm text-[#6B7280] mt-0.5">{t.description}</p>}
+                    <p className="text-xs text-[#9CA3AF] mt-1">
+                      {parsedPrompts.length} prompt{parsedPrompts.length !== 1 ? "s" : ""} · {t._count.sessions} session{t._count.sessions !== 1 ? "s" : ""} started
+                    </p>
                   </div>
-                  <h3 className="font-semibold text-[#1A1A2E] mt-0.5">{t.title}</h3>
-                  {t.description && <p className="text-sm text-[#6B7280] mt-0.5">{t.description}</p>}
-                  <p className="text-xs text-[#9CA3AF] mt-1">
-                    {parsePrompts(t.prompts).length} prompt{parsePrompts(t.prompts).length !== 1 ? "s" : ""} · {t._count.sessions} session{t._count.sessions !== 1 ? "s" : ""} started
-                  </p>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => handleToggleActive(t)} className="text-xs text-[#6B7280] hover:text-[#1A1A2E]">
+                      {t.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                    <button onClick={() => setEditingId(t.id)} className="text-xs text-[#3B82F6] hover:underline">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(t.id)} className="text-xs text-red-400 hover:text-red-600">
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button onClick={() => handleToggleActive(t)} className="text-xs text-[#6B7280] hover:text-[#1A1A2E]">
-                    {t.isActive ? "Deactivate" : "Activate"}
-                  </button>
-                  <button onClick={() => setEditingId(t.id)} className="text-xs text-[#3B82F6] hover:underline">
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(t.id)} className="text-xs text-red-400 hover:text-red-600">
-                    Delete
-                  </button>
+                <div className="mt-3 space-y-1.5">
+                  {parsedPrompts.map((p, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium flex-shrink-0 mt-0.5">{p.promptType}</span>
+                      <p className="text-sm text-[#374151]">{p.promptText}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="mt-3 space-y-1.5">
-                {parsePrompts(t.prompts).map((p, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium flex-shrink-0 mt-0.5">{p.promptType}</span>
-                    <p className="text-sm text-[#374151]">{p.promptText}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
 
       {creating ? (
         <TemplateForm

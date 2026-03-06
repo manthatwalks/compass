@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 
@@ -24,8 +24,7 @@ export async function GET() {
     });
     return NextResponse.json(templates);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return apiError(error);
   }
 }
 
@@ -37,7 +36,6 @@ export async function POST(req: Request) {
     const template = await prisma.reflectionTemplate.create({ data });
     return NextResponse.json(template);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

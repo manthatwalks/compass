@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { Client } from "@upstash/qstash";
-import { redis, CACHE_KEYS } from "@/lib/redis";
+import { redis, CACHE_KEYS, rateLimiters } from "@/lib/redis";
 import { synthesizeProfile } from "@/lib/synthesize";
 
 export const maxDuration = 60;
@@ -18,6 +18,11 @@ export async function POST(
   try {
     const student = await requireStudent();
     const { id } = await params;
+
+    const { success } = await rateLimiters.sessionSubmit.limit(student.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
 
     const session = await prisma.reflectionSession.findFirst({
       where: { id, studentId: student.id },
@@ -70,9 +75,20 @@ export async function POST(
         previousProfile,
       });
 
-      await prisma.signalProfile.create({
-        data: {
+      await prisma.signalProfile.upsert({
+        where: { studentId_sessionId: { studentId: student.id, sessionId: id } },
+        create: {
           studentId: student.id,
+          sessionId: id,
+          interestClusters: synthesis.interestClusters,
+          characterSignals: synthesis.characterSignals,
+          trajectoryShifts: synthesis.trajectoryShifts,
+          gapDetection: synthesis.gapDetection,
+          breadthScore: synthesis.breadthScore,
+          compressedSummary: synthesis.compressedSummary,
+          lastSynthesizedAt: new Date(),
+        },
+        update: {
           interestClusters: synthesis.interestClusters,
           characterSignals: synthesis.characterSignals,
           trajectoryShifts: synthesis.trajectoryShifts,
@@ -110,7 +126,6 @@ export async function POST(
 
     return NextResponse.json({ success: true, completedAt: now });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

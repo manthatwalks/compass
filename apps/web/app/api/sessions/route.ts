@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
-
-const COOLDOWN_DAYS = 21;
+import { rateLimiters } from "@/lib/redis";
+import { COOLDOWN_DAYS } from "@/lib/constants";
 
 export async function POST() {
   try {
     const student = await requireStudent();
+
+    const { success } = await rateLimiters.sessionCreate.limit(student.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const now = new Date();
 
     // Check for existing in-progress session
@@ -81,8 +87,7 @@ export async function POST() {
 
     return NextResponse.json(session);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }
 
@@ -110,7 +115,6 @@ export async function GET() {
 
     return NextResponse.json(sessions);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

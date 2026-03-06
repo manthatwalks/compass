@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 
@@ -33,8 +33,7 @@ export async function PATCH(
     });
     return NextResponse.json(template);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }
 
@@ -48,7 +47,6 @@ export async function DELETE(
     await prisma.reflectionTemplate.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
+import { rateLimiters } from "@/lib/redis";
 import { z } from "zod";
 import { ActivityCategory } from "@compass/db";
 
@@ -19,6 +20,12 @@ const createActivitySchema = z.object({
 export async function POST(req: Request) {
   try {
     const student = await requireStudent();
+
+    const { success } = await rateLimiters.activitiesCreate.limit(student.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body = await req.json();
     const data = createActivitySchema.parse(body);
 
@@ -46,7 +53,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

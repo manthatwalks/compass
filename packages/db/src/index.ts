@@ -17,7 +17,7 @@ function createPrismaClient() {
     idleTimeoutMillis: 5000,         // release connections quickly — prevents stale connections on warm Lambda reuse
     connectionTimeoutMillis: 10000,  // fail fast if can't connect
     allowExitOnIdle: true,           // let Lambda exit cleanly
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: true },
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

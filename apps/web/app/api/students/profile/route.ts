@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 
@@ -12,10 +12,18 @@ const updateProfileSchema = z.object({
 export async function GET() {
   try {
     const student = await requireStudent();
-    return NextResponse.json(student);
+    // Return only fields the client needs — not clerkId or full relations
+    return NextResponse.json({
+      id: student.id,
+      email: student.email,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      gradeLevel: student.gradeLevel,
+      schoolId: student.schoolId,
+      onboardingCompleted: student.onboardingCompleted,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }
 
@@ -30,9 +38,13 @@ export async function PUT(req: Request) {
       data,
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({
+      id: updated.id,
+      firstName: updated.firstName,
+      lastName: updated.lastName,
+      gradeLevel: updated.gradeLevel,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

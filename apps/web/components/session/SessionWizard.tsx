@@ -106,7 +106,7 @@ export default function SessionWizard({
           <h1 className="text-lg font-bold text-[#1A1A2E]">
             {sessionTitle}
           </h1>
-          <p className="text-xs text-[#6B7280]">Step {step} of 5</p>
+          <p className="text-xs text-[#6B7280]">Step {step} of {STEP_LABELS.length}</p>
         </div>
         <div className="flex items-center gap-1">
           {STEP_LABELS.map((_, i) => (

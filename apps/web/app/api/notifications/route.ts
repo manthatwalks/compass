@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 
 const querySchema = z.object({
   page: z.coerce.number().default(1),
-  limit: z.coerce.number().max(100).default(20),
+  limit: z.coerce.number().min(1).max(100).default(20),
   unreadOnly: z.coerce.boolean().default(false),
 });
 
@@ -56,7 +56,6 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

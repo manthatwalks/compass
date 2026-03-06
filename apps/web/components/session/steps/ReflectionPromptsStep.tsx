@@ -37,6 +37,7 @@ export default function ReflectionPromptsStep({
   const [loadingPrompts, setLoadingPrompts] = useState(true);
   const [saving, setSaving] = useState(false);
   const autoSaveTimers = useRef<Record<number, NodeJS.Timeout>>({});
+  const creatingRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     async function fetchPrompts() {
@@ -104,22 +105,28 @@ export default function ReflectionPromptsStep({
         body: JSON.stringify({ responseText: text }),
       });
     } else {
-      // Create new reflection
-      const res = await fetch("/api/reflections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: session.id,
-          promptText: prompt.promptText,
-          responseText: text,
-          promptType: prompt.promptType,
-          isSharedWithCounselor: false,
-        }),
-      });
+      // Guard against concurrent creates for the same prompt index
+      if (creatingRef.current.has(index)) return;
+      creatingRef.current.add(index);
+      try {
+        const res = await fetch("/api/reflections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: session.id,
+            promptText: prompt.promptText,
+            responseText: text,
+            promptType: prompt.promptType,
+            isSharedWithCounselor: false,
+          }),
+        });
 
-      if (res.ok) {
-        const reflection = await res.json() as { id: string };
-        setSavedIds((prev) => ({ ...prev, [index]: reflection.id }));
+        if (res.ok) {
+          const reflection = await res.json() as { id: string };
+          setSavedIds((prev) => ({ ...prev, [index]: reflection.id }));
+        }
+      } finally {
+        creatingRef.current.delete(index);
       }
     }
   }

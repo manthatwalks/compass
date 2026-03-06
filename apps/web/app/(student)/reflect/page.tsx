@@ -3,8 +3,7 @@ import { prisma } from "@compass/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import StartSessionButton from "@/components/session/StartSessionButton";
-
-const COOLDOWN_DAYS = 21;
+import { COOLDOWN_DAYS } from "@/lib/constants";
 
 export default async function ReflectPage() {
   const student = await requireStudent();
@@ -52,7 +51,9 @@ export default async function ReflectPage() {
     where: { yearKey: currentYear, isActive: true },
   });
 
-  const completedCount = startedTemplateIds.length;
+  const completedCount = await prisma.reflectionSession.count({
+    where: { studentId: student.id, completedAt: { not: null } },
+  });
 
   // All done for the year
   if (!nextTemplate) {

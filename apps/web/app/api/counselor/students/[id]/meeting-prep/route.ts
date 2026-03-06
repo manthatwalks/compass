@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { requireCounselor } from "@/lib/auth";
+import { requireCounselor, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
-import { redis, CACHE_KEYS, CACHE_TTL } from "@/lib/redis";
+import { redis, CACHE_KEYS, CACHE_TTL, rateLimiters } from "@/lib/redis";
 import { aiService } from "@/lib/ai-service";
 
 export const maxDuration = 60;
@@ -13,6 +13,11 @@ export async function GET(
   try {
     const counselor = await requireCounselor();
     const { id: studentId } = await params;
+
+    const { success } = await rateLimiters.counselorMeetingPrep.limit(counselor.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
 
     // Check cache
     const cacheKey = CACHE_KEYS.meetingPrep(studentId, counselor.id);
@@ -71,7 +76,7 @@ export async function GET(
           breadthScore:
             privacy?.shareBreadthScore !== false ? profile.breadthScore : null,
           compressedSummary:
-            privacy?.shareInterestClusters !== false
+            privacy?.shareSummary !== false
               ? profile.compressedSummary
               : null,
         }
@@ -96,7 +101,6 @@ export async function GET(
 
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

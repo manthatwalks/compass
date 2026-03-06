@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit";
 
 export const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -13,6 +14,39 @@ export const CACHE_KEYS = {
   notificationCount: (studentId: string, weekKey: string) =>
     `notif-count:${studentId}:${weekKey}`,
 } as const;
+
+export const rateLimiters = {
+  sessionCreate: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, "1 h"),
+    prefix: "rl:session-create",
+  }),
+  sessionSubmit: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, "1 h"),
+    prefix: "rl:session-submit",
+  }),
+  personalizedMap: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, "1 m"),
+    prefix: "rl:map-personalized",
+  }),
+  reflectionsCreate: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, "1 h"),
+    prefix: "rl:reflections-create",
+  }),
+  activitiesCreate: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, "1 h"),
+    prefix: "rl:activities-create",
+  }),
+  counselorMeetingPrep: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, "1 h"),
+    prefix: "rl:counselor-meeting-prep",
+  }),
+};
 
 export const CACHE_TTL = {
   signalProfile: 60 * 60,        // 1 hour

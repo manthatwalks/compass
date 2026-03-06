@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str
     ai_service_secret_key: str
     environment: str = "production"
+    app_url: str = "http://localhost:3000"
 
     class Config:
         env_file = ".env"

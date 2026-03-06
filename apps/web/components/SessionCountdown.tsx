@@ -1,6 +1,6 @@
 "use client";
 
-const COOLDOWN_DAYS = 21;
+import { COOLDOWN_DAYS } from "@/lib/constants";
 
 interface Session {
   completedAt?: Date | string | null;

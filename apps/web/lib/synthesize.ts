@@ -200,15 +200,18 @@ Respond with ONLY a JSON array:
     messages: [{ role: "user", content: prompt }],
   });
 
-  let content = (message.content[0] as { text: string }).text.trim();
-  if (content.startsWith("```")) {
-    const parts = content.split("```");
-    content = parts[1] ?? "";
-    if (content.startsWith("json")) content = content.slice(4);
-    content = content.trim();
+  const firstBlock = message.content[0];
+  if (!firstBlock || firstBlock.type !== "text") {
+    throw new Error("Unexpected AI response format from generateReflectionPrompts");
   }
-
-  const data = JSON.parse(content) as { promptText: string; promptType: string }[];
+  let content = firstBlock.text.trim();
+  content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+  let data: { promptText: string; promptType: string }[];
+  try {
+    data = JSON.parse(content) as { promptText: string; promptType: string }[];
+  } catch {
+    throw new Error("Failed to parse AI response as JSON in generateReflectionPrompts");
+  }
   return data.map((p) => ({
     promptText: p.promptText,
     promptType: p.promptType as ReflectionPrompt["promptType"],
@@ -226,16 +229,18 @@ export async function synthesizeProfile(
     messages: [{ role: "user", content: buildPrompt(input) }],
   });
 
-  let content = (message.content[0] as { text: string }).text.trim();
-
-  if (content.startsWith("```")) {
-    const parts = content.split("```");
-    content = parts[1] ?? "";
-    if (content.startsWith("json")) content = content.slice(4);
-    content = content.trim();
+  const firstBlock = message.content[0];
+  if (!firstBlock || firstBlock.type !== "text") {
+    throw new Error("Unexpected AI response format from synthesizeProfile");
   }
-
-  const data = JSON.parse(content) as Record<string, unknown>;
+  let content = firstBlock.text.trim();
+  content = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(content) as Record<string, unknown>;
+  } catch {
+    throw new Error("Failed to parse AI response as JSON in synthesizeProfile");
+  }
 
   return {
     interestClusters: (data.interestClusters as object[]) ?? [],

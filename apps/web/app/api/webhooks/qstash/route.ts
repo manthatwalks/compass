@@ -3,6 +3,7 @@ import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { prisma } from "@compass/db";
 import { aiService } from "@/lib/ai-service";
 import { redis, CACHE_KEYS } from "@/lib/redis";
+import { getISOWeekKey } from "@/lib/utils";
 import { Client } from "@upstash/qstash";
 
 export const dynamic = "force-dynamic";
@@ -13,10 +14,11 @@ function getQStash() {
 }
 
 interface QStashPayload {
-  type: "WEEKLY_NUDGE_SWEEP" | "OPPORTUNITY_SWEEP" | "POST_SESSION_SYNTHESIS";
+  type: "WEEKLY_NUDGE_SWEEP" | "OPPORTUNITY_SWEEP" | "POST_SESSION_SYNTHESIS" | "EMBED_PROFILE";
   data: Record<string, unknown>;
   triggeredAt: string;
 }
+
 
 async function handler(req: Request) {
   const body = (await req.json()) as QStashPayload;
@@ -38,6 +40,15 @@ async function handler(req: Request) {
 
     case "OPPORTUNITY_SWEEP": {
       await handleOpportunitySweep();
+      break;
+    }
+
+    case "EMBED_PROFILE": {
+      const { studentId, summary } = body.data as {
+        studentId: string;
+        summary: string;
+      };
+      await handleEmbedProfile(studentId, summary);
       break;
     }
 
@@ -79,10 +90,21 @@ async function handlePostSessionSynthesis(
     previousProfile,
   });
 
-  // Save new signal profile
-  await prisma.signalProfile.create({
-    data: {
+  // Save new signal profile (upsert for idempotency — QStash has at-least-once delivery)
+  await prisma.signalProfile.upsert({
+    where: { studentId_sessionId: { studentId, sessionId } },
+    create: {
       studentId,
+      sessionId,
+      interestClusters: synthesis.interestClusters as object[],
+      characterSignals: synthesis.characterSignals as object[],
+      trajectoryShifts: synthesis.trajectoryShifts as object[],
+      gapDetection: synthesis.gapDetection as object,
+      breadthScore: synthesis.breadthScore,
+      compressedSummary: synthesis.compressedSummary,
+      lastSynthesizedAt: new Date(),
+    },
+    update: {
       interestClusters: synthesis.interestClusters as object[],
       characterSignals: synthesis.characterSignals as object[],
       trajectoryShifts: synthesis.trajectoryShifts as object[],
@@ -150,7 +172,7 @@ async function handleWeeklyNudgeSweep() {
     },
   });
 
-  const weekKey = `${now.getFullYear()}-W${Math.ceil(now.getDate() / 7)}`;
+  const weekKey = getISOWeekKey(now);
 
   for (const student of students) {
     const prefs = student.notificationPrefs;
@@ -248,7 +270,7 @@ async function handleOpportunitySweep() {
 
     // Check weekly cap
     const now = new Date();
-    const weekKey = `${now.getFullYear()}-W${Math.ceil(now.getDate() / 7)}`;
+    const weekKey = getISOWeekKey(now);
     const weeklyCount = (await redis.get(
       `notif-count:${student.id}:${weekKey}`
     )) as number | null;
@@ -288,6 +310,38 @@ async function handleOpportunitySweep() {
       console.error(`Failed opportunity sweep for student ${student.id}`);
     }
   }
+}
+
+async function handleEmbedProfile(studentId: string, summary: string) {
+  const aiServiceUrl = process.env.AI_SERVICE_URL;
+  if (!aiServiceUrl) return;
+
+  const res = await fetch(`${aiServiceUrl}/embed`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: summary }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`AI embed service returned ${res.status}`);
+  }
+
+  const embeddingData = (await res.json()) as { embedding: unknown };
+  const rawEmbedding = embeddingData.embedding;
+
+  if (
+    !Array.isArray(rawEmbedding) ||
+    rawEmbedding.length !== 1024 ||
+    !rawEmbedding.every((v): v is number => typeof v === "number" && isFinite(v))
+  ) {
+    throw new Error("Invalid embedding from AI service");
+  }
+
+  await redis.set(
+    `student-embedding:${studentId}`,
+    JSON.stringify(rawEmbedding),
+    { ex: 60 * 60 * 24 * 7 }
+  );
 }
 
 // Lazily wrap handler to avoid Receiver construction at module load time

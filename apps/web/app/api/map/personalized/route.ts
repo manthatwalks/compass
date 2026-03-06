@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
-import { redis, CACHE_KEYS, CACHE_TTL } from "@/lib/redis";
+import { redis, CACHE_KEYS, CACHE_TTL, rateLimiters } from "@/lib/redis";
 
 export async function GET() {
   try {
     const student = await requireStudent();
+
+    const { success } = await rateLimiters.personalizedMap.limit(student.id);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
 
     // Check cache
     const cached = await redis.get(CACHE_KEYS.personalizedMap(student.id));
@@ -42,7 +47,16 @@ export async function GET() {
         );
 
         if (embeddingResponse.ok) {
-          const { embedding } = await embeddingResponse.json() as { embedding: number[] };
+          const embeddingData = await embeddingResponse.json() as { embedding: unknown };
+          const rawEmbedding = embeddingData.embedding;
+          if (
+            !Array.isArray(rawEmbedding) ||
+            rawEmbedding.length !== 1024 ||
+            !rawEmbedding.every((v): v is number => typeof v === "number" && isFinite(v))
+          ) {
+            throw new Error("Invalid embedding from AI service");
+          }
+          const embedding = rawEmbedding;
           const embeddingStr = `[${embedding.join(",")}]`;
 
           // pgvector similarity search (raw query needed for vector ops)
@@ -132,7 +146,6 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

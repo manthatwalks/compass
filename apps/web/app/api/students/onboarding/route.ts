@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStudent } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { z } from "zod";
 import { ActivityCategory } from "@compass/db";
@@ -10,7 +10,7 @@ const onboardingSchema = z.object({
     .array(
       z.object({
         category: z.nativeEnum(ActivityCategory),
-        name: z.string(),
+        name: z.string().min(1).max(200),
         hoursPerWeek: z.number().optional(),
         excitement: z.number().min(1).max(5).optional(),
       })
@@ -49,7 +49,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

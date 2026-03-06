@@ -34,11 +34,15 @@ export default function PulseCheckStep({
   async function handleNext() {
     setSaving(true);
     try {
-      await fetch(`/api/sessions/${session.id}`, {
+      const res = await fetch(`/api/sessions/${session.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pulseScore, pulseNote: pulseNote || undefined }),
       });
+      if (!res.ok) {
+        console.error("Failed to save pulse check:", res.status);
+        return;
+      }
       onNext({ pulseScore, pulseNote });
     } finally {
       setSaving(false);

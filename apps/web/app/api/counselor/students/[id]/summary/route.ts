@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireCounselor } from "@/lib/auth";
+import { requireCounselor, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 
 export async function GET(
@@ -66,6 +66,8 @@ export async function GET(
         privacy?.shareBreadthScore !== false ? profile?.breadthScore : null,
       gapDetection:
         privacy?.shareInterestClusters !== false ? profile?.gapDetection : null,
+      compressedSummary:
+        privacy?.shareSummary !== false ? profile?.compressedSummary : null,
       // Shared reflections only
       sharedReflections: student.sessions.flatMap((s) =>
         s.reflections.map((r) => ({
@@ -79,7 +81,6 @@ export async function GET(
 
     return NextResponse.json(summary);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(error);
   }
 }

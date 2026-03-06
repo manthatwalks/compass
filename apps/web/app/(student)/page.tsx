@@ -5,8 +5,7 @@ import SignalSummary from "@/components/SignalSummary";
 import BreadthBar from "@/components/BreadthBar";
 import SessionCountdown from "@/components/SessionCountdown";
 import NotificationPreview from "@/components/NotificationPreview";
-
-const COOLDOWN_DAYS = 21;
+import { COOLDOWN_DAYS } from "@/lib/constants";
 
 export default async function HomePage() {
   const student = await requireStudent();

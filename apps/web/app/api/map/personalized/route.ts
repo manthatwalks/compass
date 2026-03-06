@@ -132,7 +132,13 @@ export async function GET() {
 
     const result = {
       nodes,
-      edges,
+      edges: edges.map((e) => ({
+        id: e.id,
+        source: e.sourceId,
+        target: e.targetId,
+        weight: e.weight,
+        edgeType: e.edgeType,
+      })),
       personalizedNodeIds,
       studentBreadthScore: signalProfile?.breadthScore ?? 0,
     };

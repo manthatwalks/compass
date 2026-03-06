@@ -9,7 +9,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true, // TODO: enable once lint errors are resolved
+    ignoreDuringBuilds: false,
   },
   async headers() {
     return [

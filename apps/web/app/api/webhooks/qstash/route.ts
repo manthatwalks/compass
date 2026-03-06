@@ -77,7 +77,7 @@ async function handlePostSessionSynthesis(
       orderBy: { createdAt: "asc" },
     }),
     prisma.signalProfile.findFirst({
-      where: { studentId },
+      where: { studentId, sessionId: { not: sessionId } },
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -318,7 +318,10 @@ async function handleEmbedProfile(studentId: string, summary: string) {
 
   const res = await fetch(`${aiServiceUrl}/embed`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Service-Key": process.env.AI_SERVICE_SECRET_KEY ?? "",
+    },
     body: JSON.stringify({ text: summary }),
   });
 

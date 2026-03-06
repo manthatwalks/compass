@@ -97,7 +97,7 @@ export async function GET(
     });
 
     // Cache for 24 hours
-    await redis.setex(cacheKey, CACHE_TTL.meetingPrep, result);
+    await redis.set(cacheKey, result, { ex: CACHE_TTL.meetingPrep });
 
     return NextResponse.json(result);
   } catch (error) {

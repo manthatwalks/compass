@@ -20,13 +20,13 @@ const NODE_TYPE_LABELS: Record<string, string> = {
   VALUE: "Value",
 };
 
-const NODE_COLORS: Record<string, string> = {
-  CAREER: "blue",
-  MAJOR: "violet",
-  INDUSTRY: "emerald",
-  PROGRAM: "amber",
-  SKILL: "red",
-  VALUE: "pink",
+const NODE_BADGE_CLASSES: Record<string, string> = {
+  CAREER: "bg-blue-100 text-blue-800",
+  MAJOR: "bg-violet-100 text-violet-800",
+  INDUSTRY: "bg-emerald-100 text-emerald-800",
+  PROGRAM: "bg-amber-100 text-amber-800",
+  SKILL: "bg-red-100 text-red-800",
+  VALUE: "bg-pink-100 text-pink-800",
 };
 
 export default function MapNodeDetail({
@@ -37,7 +37,7 @@ export default function MapNodeDetail({
   onClose: () => void;
 }) {
   const meta = node.metadata;
-  const color = NODE_COLORS[node.type] ?? "gray";
+  const badgeClass = NODE_BADGE_CLASSES[node.type] ?? "bg-gray-100 text-gray-800";
 
   return (
     <motion.div
@@ -50,7 +50,7 @@ export default function MapNodeDetail({
       <div className="flex items-start justify-between mb-3">
         <div>
           <span
-            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide bg-${color}-100 text-${color}-800`}
+            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${badgeClass}`}
           >
             {NODE_TYPE_LABELS[node.type] ?? node.type}
           </span>

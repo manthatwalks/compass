@@ -47,7 +47,7 @@ export default function MeetingPrepPanel({
       {!fetched && !loading && (
         <div className="text-center py-4">
           <p className="text-xs text-[#6B7280] mb-3">
-            Generate a personalized meeting brief based on this student's
+            Generate a personalized meeting brief based on this student&apos;s
             privacy-filtered signals.
           </p>
           <button
@@ -90,7 +90,7 @@ export default function MeetingPrepPanel({
                     key={i}
                     className="text-xs text-[#1A1A2E] p-2.5 bg-blue-50/60 rounded-lg border border-blue-100"
                   >
-                    "{starter}"
+                    &quot;{starter}&quot;
                   </div>
                 ))}
               </div>

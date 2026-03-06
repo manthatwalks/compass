@@ -36,21 +36,8 @@ function EngagementDot({
 export default async function CounselorDashboard() {
   const counselor = await requireCounselor();
 
-  // Fetch students via API (applies privacy filtering)
-  const studentsRes = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/counselor/students`,
-    {
-      headers: {
-        // Internal server-to-server call — auth via service key
-        "x-internal": "true",
-      },
-      cache: "no-store",
-    }
-  );
-
   let students: StudentRow[] = [];
 
-  // Fallback: direct DB query
   const rawStudents = await prisma.student.findMany({
     where: { schoolId: counselor.schoolId },
     include: {

@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { Button } from "@compass/ui";
-import { ActivityCategory } from "@compass/db";
+const ActivityCategory = {
+  ACADEMIC: "ACADEMIC",
+  ARTS: "ARTS",
+  ATHLETICS: "ATHLETICS",
+  COMMUNITY_SERVICE: "COMMUNITY_SERVICE",
+  EMPLOYMENT: "EMPLOYMENT",
+  LEADERSHIP: "LEADERSHIP",
+  PERSONAL_PROJECT: "PERSONAL_PROJECT",
+  OTHER: "OTHER",
+} as const;
 
 interface Activity {
   id: string;

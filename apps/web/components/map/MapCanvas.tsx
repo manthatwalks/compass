@@ -6,6 +6,7 @@ import * as d3 from "d3";
 import MapNodeDetail from "./MapNodeDetail";
 import MapSearchBar from "./MapSearchBar";
 import MapLegend from "./MapLegend";
+import Link from "next/link";
 
 interface MapNode {
   id: string;
@@ -153,7 +154,6 @@ export default function MapCanvas() {
       .data(nodes)
       .join("g")
       .attr("class", "map-node")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .call(
         d3
           .drag<SVGGElement, MapNode>()
@@ -264,12 +264,12 @@ export default function MapCanvas() {
             reflections and build your signal profile. Check back after your
             first reflection!
           </p>
-          <a
+          <Link
             href="/reflect"
             className="inline-block px-5 py-2.5 bg-[#3B82F6] text-white rounded-xl text-sm font-medium hover:bg-[#2563EB] transition-colors"
           >
             Start a Reflection
-          </a>
+          </Link>
         </div>
       </div>
     );

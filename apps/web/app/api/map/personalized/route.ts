@@ -144,10 +144,10 @@ export async function GET() {
     };
 
     // Cache for 1 hour
-    await redis.setex(
+    await redis.set(
       CACHE_KEYS.personalizedMap(student.id),
-      CACHE_TTL.personalizedMap,
-      result
+      result,
+      { ex: CACHE_TTL.personalizedMap }
     );
 
     return NextResponse.json(result);

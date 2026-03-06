@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { AnimatePresence } from "framer-motion";
 import * as d3 from "d3";
 import MapNodeDetail from "./MapNodeDetail";
 import MapSearchBar from "./MapSearchBar";
@@ -92,9 +93,9 @@ export default function MapCanvas() {
   useEffect(() => {
     if (!svgRef.current || nodes.length === 0) return;
 
-    const container = svgRef.current.parentElement!;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    if (width === 0 || height === 0) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
@@ -275,7 +276,7 @@ export default function MapCanvas() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-[#F2F4F7] to-[#E8EBF0]">
+    <div className="fixed inset-0 z-10 overflow-hidden bg-gradient-to-br from-[#F2F4F7] to-[#E8EBF0]">
       {/* Controls */}
       <div className="absolute top-4 left-4 right-4 z-20 flex items-start gap-3">
         <MapSearchBar onSearch={handleSearch} />
@@ -301,12 +302,14 @@ export default function MapCanvas() {
       </div>
 
       {/* Node Detail Panel */}
-      {selectedNode && (
-        <MapNodeDetail
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-        />
-      )}
+      <AnimatePresence>
+        {selectedNode && (
+          <MapNodeDetail
+            node={selectedNode}
+            onClose={() => setSelectedNode(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

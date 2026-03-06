@@ -46,9 +46,9 @@ const nextConfig = {
       },
     ],
   },
+  outputFileTracingRoot: path.join(__dirname, "../../"),
   experimental: {
     optimizePackageImports: ["@compass/ui"],
-    outputFileTracingRoot: path.join(__dirname, "../../"),
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

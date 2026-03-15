@@ -13,6 +13,8 @@ export const CACHE_KEYS = {
     `meeting-prep:${studentId}:${counselorId}`,
   notificationCount: (studentId: string, weekKey: string) =>
     `notif-count:${studentId}:${weekKey}`,
+  exploreFeed: (studentId: string) => `explore:feed:${studentId}`,
+  counselorOpportunities: (schoolId: string) => `explore:counselor:${schoolId}`,
 } as const;
 
 export const rateLimiters = {
@@ -46,11 +48,28 @@ export const rateLimiters = {
     limiter: Ratelimit.slidingWindow(10, "1 h"),
     prefix: "rl:counselor-meeting-prep",
   }),
+  exploreFeed: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, "1 m"),
+    prefix: "rl:explore-feed",
+  }),
+  exploreInteract: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, "1 m"),
+    prefix: "rl:explore-interact",
+  }),
+  counselorOpportunityCreate: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, "1 h"),
+    prefix: "rl:counselor-opp-create",
+  }),
 };
 
 export const CACHE_TTL = {
-  signalProfile: 60 * 60,        // 1 hour
-  personalizedMap: 60 * 60,       // 1 hour
-  meetingPrep: 60 * 60 * 24,      // 24 hours
+  signalProfile: 60 * 60,              // 1 hour
+  personalizedMap: 60 * 60,            // 1 hour
+  meetingPrep: 60 * 60 * 24,           // 24 hours
   notificationCount: 60 * 60 * 24 * 7, // 1 week
+  exploreFeed: 60 * 30,                // 30 minutes
+  counselorOpportunities: 60 * 5,      // 5 minutes
 } as const;

@@ -14,7 +14,7 @@ function getQStash() {
 }
 
 interface QStashPayload {
-  type: "WEEKLY_NUDGE_SWEEP" | "OPPORTUNITY_SWEEP" | "POST_SESSION_SYNTHESIS" | "EMBED_PROFILE";
+  type: "WEEKLY_NUDGE_SWEEP" | "OPPORTUNITY_SWEEP" | "POST_SESSION_SYNTHESIS" | "EMBED_PROFILE" | "EMBED_OPPORTUNITY";
   data: Record<string, unknown>;
   triggeredAt: string;
 }
@@ -49,6 +49,12 @@ async function handler(req: Request) {
         summary: string;
       };
       await handleEmbedProfile(studentId, summary);
+      break;
+    }
+
+    case "EMBED_OPPORTUNITY": {
+      const { opportunityId } = body.data as { opportunityId: string };
+      await handleEmbedOpportunity(opportunityId);
       break;
     }
 
@@ -345,6 +351,62 @@ async function handleEmbedProfile(studentId: string, summary: string) {
     JSON.stringify(rawEmbedding),
     { ex: 60 * 60 * 24 * 7 }
   );
+}
+
+async function handleEmbedOpportunity(opportunityId: string) {
+  const aiServiceUrl = process.env.AI_SERVICE_URL;
+  if (!aiServiceUrl) return;
+
+  const opportunity = await prisma.opportunity.findUnique({
+    where: { id: opportunityId },
+    select: { id: true, title: true, description: true, tags: true, schoolId: true },
+  });
+
+  if (!opportunity) return;
+
+  // Concatenate text for embedding
+  const text = [
+    opportunity.title,
+    opportunity.description,
+    ...(opportunity.tags ?? []),
+  ].join(" ");
+
+  const res = await fetch(`${aiServiceUrl}/embed`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Service-Key": process.env.AI_SERVICE_SECRET_KEY ?? "",
+    },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`AI embed service returned ${res.status}`);
+  }
+
+  const embeddingData = (await res.json()) as { embedding: unknown };
+  const rawEmbedding = embeddingData.embedding;
+
+  if (
+    !Array.isArray(rawEmbedding) ||
+    rawEmbedding.length !== 1024 ||
+    !rawEmbedding.every((v): v is number => typeof v === "number" && isFinite(v))
+  ) {
+    throw new Error("Invalid embedding from AI service");
+  }
+
+  const embeddingStr = `[${rawEmbedding.join(",")}]`;
+
+  await prisma.$executeRaw`
+    UPDATE "Opportunity"
+    SET embedding = ${embeddingStr}::vector, "embeddedAt" = NOW()
+    WHERE id = ${opportunityId}
+  `;
+
+  // Invalidate explore feed caches for the school
+  if (opportunity.schoolId) {
+    await redis.del(CACHE_KEYS.counselorOpportunities(opportunity.schoolId));
+  }
 }
 
 // Lazily wrap handler to avoid Receiver construction at module load time

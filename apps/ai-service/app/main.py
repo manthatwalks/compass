@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from app.config import get_settings
-from app.routers import reflection, synthesis, notifications, counselor
+from app.routers import reflection, synthesis, notifications, counselor, explore
 from app.models.requests import EmbedRequest, EmbedResponse
 from app.services.embedding_service import embedding_service
 
@@ -47,6 +47,7 @@ app.include_router(reflection.router)
 app.include_router(synthesis.router)
 app.include_router(notifications.router)
 app.include_router(counselor.router)
+app.include_router(explore.router)
 
 
 @app.get("/health")

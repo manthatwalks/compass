@@ -17,6 +17,7 @@ interface Counselor {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/flags", label: "Needs Attention", icon: "🚩" },
+  { href: "/opportunities", label: "Opportunities", icon: "🎯" },
 ];
 
 export default function CounselorSidebar({

@@ -106,3 +106,24 @@ class EmbedRequest(BaseModel):
 
 class EmbedResponse(BaseModel):
     embedding: list[float]
+
+
+class OpportunityForExplanation(BaseModel):
+    id: str
+    title: str
+    description: str
+    category: str
+
+
+class ExplainMatchRequest(BaseModel):
+    studentSummary: str
+    opportunities: list[OpportunityForExplanation]
+
+
+class OpportunityExplanation(BaseModel):
+    id: str
+    reason: str
+
+
+class ExplainMatchResponse(BaseModel):
+    explanations: list[OpportunityExplanation]

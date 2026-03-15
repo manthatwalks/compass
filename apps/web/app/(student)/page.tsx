@@ -154,6 +154,25 @@ export default async function HomePage() {
           </div>
         </div>
       </Link>
+
+      {/* Explore CTA */}
+      <Link href="/explore" className="block">
+        <div className="glass-card p-5 border-green-200/40 bg-green-50/60 hover:bg-green-50/80 transition-colors cursor-pointer">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A2E]">
+                Explore Opportunities
+              </p>
+              <p className="text-xs text-[#6B7280] mt-0.5">
+                Competitions, research, events matched to you
+              </p>
+            </div>
+            <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }

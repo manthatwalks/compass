@@ -84,4 +84,18 @@ export const aiService = {
     sharedReflections: unknown[];
   }) =>
     aiServiceFetch<MeetingPrepResult>("/meeting-prep", data),
+
+  explainMatch: (data: {
+    studentSummary: string;
+    opportunities: Array<{
+      id: string;
+      title: string;
+      description: string;
+      category: string;
+    }>;
+  }) =>
+    aiServiceFetch<{ explanations: Array<{ id: string; reason: string }> }>(
+      "/explain-match",
+      data
+    ),
 };

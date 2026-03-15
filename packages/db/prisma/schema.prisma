@@ -57,6 +57,28 @@ enum EdgeType {
   ALTERNATIVE
 }
 
+enum OpportunityCategory {
+  COMPETITION
+  RESEARCH
+  EVENT
+  HACKATHON
+  PROGRAM
+  CLUB
+  VOLUNTEER
+  PUBLICATION
+}
+
+enum OpportunityScope {
+  GLOBAL
+  SCHOOL
+}
+
+enum OpportunityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Student {
   id                  String   @id @default(cuid())
   clerkId             String   @unique
@@ -69,15 +91,16 @@ model Student {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  school              School?                @relation(fields: [schoolId], references: [id])
-  sessions            ReflectionSession[]
-  activities          Activity[]
-  reflections         Reflection[]
-  signalProfiles      SignalProfile[]
-  notifications       Notification[]
-  notificationPrefs   NotificationPreferences?
-  privacySettings     StudentPrivacySettings?
-  peerMemberships     PeerGroupMember[]
+  school                School?                @relation(fields: [schoolId], references: [id])
+  sessions              ReflectionSession[]
+  activities            Activity[]
+  reflections           Reflection[]
+  signalProfiles        SignalProfile[]
+  notifications         Notification[]
+  notificationPrefs     NotificationPreferences?
+  privacySettings       StudentPrivacySettings?
+  peerMemberships       PeerGroupMember[]
+  opportunityInteractions StudentOpportunityInteraction[]
 }
 
 model Counselor {
@@ -89,7 +112,8 @@ model Counselor {
   schoolId  String
   createdAt DateTime @default(now())
 
-  school    School   @relation(fields: [schoolId], references: [id])
+  school        School        @relation(fields: [schoolId], references: [id])
+  opportunities Opportunity[]
 }
 
 model School {
@@ -103,6 +127,7 @@ model School {
 
   students       Student[]
   counselors     Counselor[]
+  opportunities  Opportunity[]
 }
 
 model ReflectionTemplate {
@@ -282,4 +307,55 @@ model PeerGroupMember {
   student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([groupId, studentId])
+}
+
+model Opportunity {
+  id            String              @id @default(cuid())
+  scope         OpportunityScope    @default(SCHOOL)
+  status        OpportunityStatus   @default(DRAFT)
+  category      OpportunityCategory
+  title         String
+  description   String
+  url           String?
+  location      String?
+  organizerName String?
+  gradeLevels   Int[]               @default([9, 10, 11, 12])
+  deadline      DateTime?
+  startDate     DateTime?
+  endDate       DateTime?
+  tags          String[]            @default([])
+  metadata      Json                @default("{}")
+  schoolId      String?
+  counselorId   String?
+  embedding     Unsupported("vector(1024)")?
+  embeddedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  school        School?             @relation(fields: [schoolId], references: [id])
+  counselor     Counselor?          @relation(fields: [counselorId], references: [id])
+  interactions  StudentOpportunityInteraction[]
+
+  @@index([scope, status])
+  @@index([schoolId, status])
+  @@index([deadline])
+  @@index([category])
+}
+
+model StudentOpportunityInteraction {
+  id            String      @id @default(cuid())
+  studentId     String
+  opportunityId String
+  viewedAt      DateTime?
+  savedAt       DateTime?
+  clickedAt     DateTime?
+  dismissedAt   DateTime?
+  appliedAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, opportunityId])
 }

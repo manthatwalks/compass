@@ -23,7 +23,8 @@
         "QSTASH_NEXT_SIGNING_KEY",
         "AI_SERVICE_URL",
         "AI_SERVICE_SECRET_KEY",
-        "NEXT_PUBLIC_APP_URL"
+        "NEXT_PUBLIC_APP_URL",
+        "ANTHROPIC_API_KEY"
       ]
     },
     "dev": {

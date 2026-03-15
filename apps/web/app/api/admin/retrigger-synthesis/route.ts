@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin, apiError } from "@/lib/auth";
+import { requireStudent, apiError } from "@/lib/auth";
 import { prisma } from "@compass/db";
 import { synthesizeProfile } from "@/lib/synthesize";
 import { redis, CACHE_KEYS } from "@/lib/redis";
@@ -7,15 +7,11 @@ import { redis, CACHE_KEYS } from "@/lib/redis";
 export const maxDuration = 60;
 
 // POST /api/admin/retrigger-synthesis
-// Body: { studentId: string } — re-runs synthesis for the student's latest completed session
-export async function POST(req: Request) {
+// Re-runs synthesis for the calling student's latest completed session
+export async function POST(_req: Request) {
   try {
-    await requireAdmin();
-
-    const { studentId } = (await req.json()) as { studentId?: string };
-    if (!studentId) {
-      return NextResponse.json({ error: "studentId required" }, { status: 400 });
-    }
+    const student = await requireStudent();
+    const { studentId } = { studentId: student.id };
 
     // Find latest completed session
     const session = await prisma.reflectionSession.findFirst({
